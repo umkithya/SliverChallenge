@@ -1,9 +1,86 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() {
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    systemNavigationBarColor: Colors.blue,
+    statusBarColor: Colors.pink,
+  ));
   runApp(const MyApp());
+}
+
+class CustomRefresh {
+  static Widget buildRefreshIndicator(
+    BuildContext context,
+    RefreshIndicatorMode refreshState,
+    double pulledExtent,
+    double refreshTriggerPullDistance,
+    double refreshIndicatorExtent,
+  ) {
+    final double percentageComplete =
+        clampDouble(pulledExtent / refreshTriggerPullDistance, 0.0, 1.0);
+
+    // Place the indicator at the top of the sliver that opens up. We're using a
+    // Stack/Positioned widget because the CupertinoActivityIndicator does some
+    // internal translations based on the current size (which grows as the user drags)
+    // that makes Padding calculations difficult. Rather than be reliant on the
+    // internal implementation of the activity indicator, the Positioned widget allows
+    // us to be explicit where the widget gets placed. The indicator should appear
+    // over the top of the dragged widget, hence the use of Clip.none.
+    return Center(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: <Widget>[
+          Positioned(
+            top: 16,
+            left: 0.0,
+            right: 0.0,
+            child: _buildIndicatorForRefreshState(
+                refreshState, 14, percentageComplete),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _buildIndicatorForRefreshState(
+      RefreshIndicatorMode refreshState,
+      double radius,
+      double percentageComplete) {
+    switch (refreshState) {
+      case RefreshIndicatorMode.drag:
+        // While we're dragging, we draw individual ticks of the spinner while simultaneously
+        // easing the opacity in. Note that the opacity curve values here were derived using
+        // Xcode through inspecting a native app running on iOS 13.5.
+        const Curve opacityCurve = Interval(0.0, 0.35, curve: Curves.easeInOut);
+        return Opacity(
+          opacity: opacityCurve.transform(percentageComplete),
+          child: CupertinoActivityIndicator.partiallyRevealed(
+              color: Colors.white,
+              radius: radius,
+              progress: percentageComplete),
+        );
+      case RefreshIndicatorMode.armed:
+      case RefreshIndicatorMode.refresh:
+        // Once we're armed or performing the refresh, we just show the normal spinner.
+        return CupertinoActivityIndicator(
+          radius: radius,
+          color: Colors.white,
+        );
+      case RefreshIndicatorMode.done:
+        // When the user lets go, the standard transition is to shrink the spinner.
+        return CupertinoActivityIndicator(
+          radius: radius * percentageComplete,
+          color: Colors.white,
+        );
+      case RefreshIndicatorMode.inactive:
+        // Anything else doesn't show anything.
+        return const SizedBox.shrink();
+    }
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -15,9 +92,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(
-          // primarySwatch: Colors.red,
-          ),
+      theme: ThemeData(primaryColor: Colors.white),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -49,21 +124,23 @@ class User {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   final listData = <User>[];
-  late ScrollController _scrollController;
+  final ScrollController _scrollController =
+      ScrollController(initialScrollOffset: 0.1);
   static const kExpandedHeight = 400.00;
+  ScrollPhysics _physics = const BouncingScrollPhysics();
   @override
   void initState() {
-    _scrollController = ScrollController(initialScrollOffset: 0.1);
+    // _scrollController = ScrollController(initialScrollOffset: 0.1);
     _scrollController.addListener(() {
       setState(() {
-        debugPrint("_isSliverAppBarExpanded$_isSliverAppBarExpanded");
         _isSliverAppBarExpanded;
       });
-      // setState(() {
-      //   _textColor = _isSliverAppBarExpanded ? Colors.white : Colors.black;
-      // });
+      if (_scrollController.position.pixels >= 56) {
+        setState(() => _physics = const ClampingScrollPhysics());
+      } else {
+        setState(() => _physics = const BouncingScrollPhysics());
+      }
     });
     listData
       ..add(User('User 1', 10))
@@ -71,17 +148,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ..add(User('User 3', 19));
 
     super.initState();
-  }
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
   }
 
   bool get _isSliverAppBarExpanded {
@@ -98,31 +164,60 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     const primaryColor = Color(0xff36B4D4);
-    return Scaffold(
-      // backgroundColor: Colors.blue[400],
-      backgroundColor: primaryColor,
+    return AnnotatedRegion(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        // backgroundColor: Colors.blue[400],
+        backgroundColor: primaryColor,
 
-      extendBodyBehindAppBar: true,
-      body: Padding(
-        padding: const EdgeInsets.only(top: 0),
-        child: SafeArea(
+        extendBodyBehindAppBar: true,
+        body: SafeArea(
+          bottom: false,
           child: CustomScrollView(
+            // physics: _physics,
+            physics: _physics,
             controller: _scrollController,
             slivers: [
-              CupertinoSliverRefreshControl(
-                onRefresh: () async {
-                  listData.clear();
-                  await Future.delayed(const Duration(seconds: 2));
-                  for (var index = 0; index < 30; index++) {
-                    var nama = 'User ${index + 1}';
-                    var nomor = Random().nextInt(100);
-                    listData.add(User(nama, nomor));
-                  }
-                  setState(() {});
-                },
-              ),
+              CupertinoSliverRefreshControl(onRefresh: () async {
+                // listData.clear();
+                await Future.delayed(const Duration(seconds: 2));
+                for (var index = 0; index < 30; index++) {
+                  var nama = 'User ${index + 1}';
+                  var nomor = Random().nextInt(100);
+                  listData.add(User(nama, nomor));
+                }
+                setState(() {});
+              }, builder: (context, refreshState, pulledExtent,
+                      refreshTriggerPullDistance, refreshIndicatorExtent) {
+                return CustomRefresh.buildRefreshIndicator(
+                    context,
+                    refreshState,
+                    pulledExtent,
+                    refreshTriggerPullDistance,
+                    refreshIndicatorExtent);
+              }
+                  // builder: (context, refreshState, pulledExtent,
+                  //     refreshTriggerPullDistance, refreshIndicatorExtent) {
+                  //   print(refreshState);
+                  //   return Visibility(
+                  //     visible: refreshState != RefreshIndicatorMode.done,
+                  //     child: Padding(
+                  //       padding: const EdgeInsets.all(8.0),
+                  //       child: CupertinoActivityIndicator(
+                  //           color: Colors.white,
+                  //           radius: refreshState == RefreshIndicatorMode.done
+                  //               ? 1
+                  //               : 15,
+                  //           animating: refreshState == RefreshIndicatorMode.done
+                  //               ? false
+                  //               : true),
+                  //     ),
+                  //   );
+                  // },
+                  ),
 
               SliverSafeArea(
+                bottom: false,
                 sliver: SliverAppBar(
                   shadowColor: Colors.transparent,
                   surfaceTintColor: Colors.transparent,
@@ -131,15 +226,18 @@ class _MyHomePageState extends State<MyHomePage> {
                   excludeHeaderSemantics: true,
                   // foregroundColor: Colors.transparent,
                   bottom: PreferredSize(
-                    preferredSize: const Size.fromHeight(30),
+                    preferredSize: const Size.fromHeight(50),
                     child: Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.only(
+                          boxShadow: [
+                            BoxShadow(color: Colors.grey[400]!, blurRadius: 2),
+                          ],
+                          borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(20),
                               topRight: Radius.circular(20))),
                       width: double.maxFinite,
-                      padding: const EdgeInsets.only(top: 10, bottom: 20),
+                      padding: const EdgeInsets.only(top: 25, bottom: 35),
                       child: Center(
                           child: Container(
                         decoration: BoxDecoration(
@@ -271,7 +369,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                     ),
                                     Container(
-                                      height: 150,
+                                      height: 120,
                                       width: double.maxFinite,
                                       decoration: const BoxDecoration(
                                         color: Colors.white,
@@ -385,22 +483,33 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
 
               // const SliverPadding(padding: EdgeInsets.only(top: 20)),
+              SliverToBoxAdapter(
+                child: Container(color: Colors.white),
+              ),
               SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   var user = listData[index];
-                  return Card(
+                  return Container(
+                    color: Colors.white,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(user.nama),
-                          Text(
-                            '${user.nomor}',
-                            style: Theme.of(context).textTheme.bodySmall,
+                      padding: index == listData.length - 1
+                          ? const EdgeInsets.only(bottom: 35)
+                          : EdgeInsets.zero,
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(user.nama),
+                              Text(
+                                '${user.nomor}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   );
