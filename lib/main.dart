@@ -127,7 +127,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final listData = <User>[];
   final ScrollController _scrollController =
       ScrollController(initialScrollOffset: 0.1);
-  static const kExpandedHeight = 400.00;
+  static const kExpandedHeight = 420.00;
+  bool showValue = false;
   ScrollPhysics _physics = const BouncingScrollPhysics();
   @override
   void initState() {
@@ -163,361 +164,419 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+    SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(statusBarColor: Color(0xff36B4D4)));
     const primaryColor = Color(0xff36B4D4);
-    return AnnotatedRegion(
-      value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        // backgroundColor: Colors.blue[400],
-        backgroundColor: primaryColor,
 
-        extendBodyBehindAppBar: true,
-        body: SafeArea(
-          bottom: false,
-          child: CustomScrollView(
-            // physics: _physics,
-            physics: _physics,
-            controller: _scrollController,
-            slivers: [
-              CupertinoSliverRefreshControl(onRefresh: () async {
-                // listData.clear();
-                await Future.delayed(const Duration(seconds: 2));
-                for (var index = 0; index < 30; index++) {
-                  var nama = 'User ${index + 1}';
-                  var nomor = Random().nextInt(100);
-                  listData.add(User(nama, nomor));
-                }
-                setState(() {});
-              }, builder: (context, refreshState, pulledExtent,
-                      refreshTriggerPullDistance, refreshIndicatorExtent) {
-                return CustomRefresh.buildRefreshIndicator(
+    return CupertinoPageScaffold(
+      // backgroundColor: Colors.red,
+      // backgroundColor: C,
+
+      // extendBodyBehindAppBar: false,
+      // backgroundColor: primaryColor,
+      child: CustomScrollView(
+        // physics: _physics,
+        physics: const BouncingScrollPhysics(),
+        controller: _scrollController,
+        slivers: [
+          CupertinoSliverRefreshControl(onRefresh: () async {
+            await Future.delayed(const Duration(seconds: 2));
+            for (var index = 0; index < 30; index++) {
+              var nama = 'User ${index + 1}';
+              var nomor = Random().nextInt(100);
+              listData.add(User(nama, nomor));
+            }
+
+            setState(() {});
+          }, builder: (context, refreshState, pulledExtent,
+              refreshTriggerPullDistance, refreshIndicatorExtent) {
+            return Container(
+              color: primaryColor,
+              child: SafeArea(
+                child: CustomRefresh.buildRefreshIndicator(
                     context,
                     refreshState,
                     pulledExtent,
                     refreshTriggerPullDistance,
-                    refreshIndicatorExtent);
-              }
-                  // builder: (context, refreshState, pulledExtent,
-                  //     refreshTriggerPullDistance, refreshIndicatorExtent) {
-                  //   print(refreshState);
-                  //   return Visibility(
-                  //     visible: refreshState != RefreshIndicatorMode.done,
-                  //     child: Padding(
-                  //       padding: const EdgeInsets.all(8.0),
-                  //       child: CupertinoActivityIndicator(
-                  //           color: Colors.white,
-                  //           radius: refreshState == RefreshIndicatorMode.done
-                  //               ? 1
-                  //               : 15,
-                  //           animating: refreshState == RefreshIndicatorMode.done
-                  //               ? false
-                  //               : true),
-                  //     ),
-                  //   );
-                  // },
-                  ),
+                    refreshIndicatorExtent),
+              ),
+            );
+          }),
 
-              SliverSafeArea(
-                bottom: false,
-                sliver: SliverAppBar(
-                  shadowColor: Colors.transparent,
-                  surfaceTintColor: Colors.transparent,
-                  backgroundColor: primaryColor,
-                  elevation: 0.0,
-                  excludeHeaderSemantics: true,
-                  // foregroundColor: Colors.transparent,
-                  bottom: PreferredSize(
-                    preferredSize: const Size.fromHeight(50),
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(color: Colors.grey[400]!, blurRadius: 2),
-                          ],
-                          borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(20),
-                              topRight: Radius.circular(20))),
-                      width: double.maxFinite,
-                      padding: const EdgeInsets.only(top: 25, bottom: 35),
-                      child: Center(
+          SliverAppBar(
+            shadowColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            backgroundColor: primaryColor,
+            elevation: 0.0,
+            excludeHeaderSemantics: true,
+            // foregroundColor: Colors.transparent,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(60),
+              child: Container(
+                height: 60,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(color: Colors.grey[400]!, blurRadius: 2),
+                    ],
+                    borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20))),
+                width: double.maxFinite,
+                // padding: const EdgeInsets.only(top: 25, bottom: 35),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5),
                           child: Container(
-                        decoration: BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius: BorderRadius.circular(8)),
-                        height: 5,
-                        width: 50,
-                      )),
-                    ),
-                  ),
-                  flexibleSpace: _isSliverAppBarExpanded
-                      ? null
-                      : FlexibleSpaceBar(
-                          centerTitle: true,
-                          // collapseMode: CollapseMode.pin,
-                          // collapseMode: CollapseMode.pin,
-                          background: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 80,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 20,
-                                      ),
-                                      child: Text(
-                                        "Main Balance",
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 20,
-                                      ),
-                                      child: Row(
-                                        children: const [
-                                          Padding(
-                                            padding: EdgeInsets.only(right: 8),
-                                            child: Text(
-                                              "551 805 091 | Main",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w400),
-                                            ),
-                                          ),
-                                          Icon(
-                                            Icons.copy,
-                                            color: Colors.white,
-                                            size: 18,
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          top: 15, bottom: 5, left: 20),
-                                      child: Row(
-                                        children: [
-                                          const Padding(
-                                            padding: EdgeInsets.only(right: 10),
-                                            child: Text(
-                                              "*** *** ***",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 30,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ),
-                                          const Padding(
-                                            padding: EdgeInsets.only(right: 10),
-                                            child: Text(
-                                              "ZPOIN",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 23,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          ),
-                                          Container(
-                                            decoration: BoxDecoration(
-                                                color: Colors.blueGrey
-                                                    .withOpacity(.2),
-                                                borderRadius:
-                                                    BorderRadius.circular(60)),
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 5, horizontal: 5),
-                                            child: const Icon(
-                                              Icons.remove_red_eye_outlined,
-                                              color: Colors.white,
-                                              size: 13,
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    const Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 20,
-                                      ),
-                                      child: Text(
-                                        "Available Balance",
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Stack(
-                                  children: [
-                                    Container(
-                                      height: 195,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[200],
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                    ),
-                                    Container(
-                                      height: 120,
-                                      width: double.maxFinite,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(20),
-                                            topRight: Radius.circular(20)),
-                                      ),
-                                      child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: const [
-                                                Padding(
-                                                  padding: EdgeInsets.only(
-                                                      bottom: 10),
-                                                  child: Icon(
-                                                    Icons.qr_code,
-                                                    color: primaryColor,
-                                                    size: 40,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  "My QR",
-                                                  style: TextStyle(
-                                                      color: Colors.black54,
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w600),
-                                                )
-                                              ],
-                                            ),
-                                            Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: const [
-                                                Padding(
-                                                  padding: EdgeInsets.only(
-                                                      bottom: 10),
-                                                  child: Icon(
-                                                    Icons.compare_arrows,
-                                                    color: primaryColor,
-                                                    size: 40,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  "Transfer",
-                                                  style: TextStyle(
-                                                      color: Colors.black54,
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w600),
-                                                )
-                                              ],
-                                            ),
-                                            Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: const [
-                                                Padding(
-                                                  padding: EdgeInsets.only(
-                                                      bottom: 10),
-                                                  child: Icon(
-                                                    Icons.savings,
-                                                    color: primaryColor,
-                                                    size: 40,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  "Staking",
-                                                  style: TextStyle(
-                                                      color: Colors.black54,
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w600),
-                                                )
-                                              ],
-                                            ),
-                                          ]),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                            decoration: BoxDecoration(
+                                color: Colors.grey[400],
+                                borderRadius: BorderRadius.circular(8)),
+                            height: 4,
+                            width: 40,
                           ),
-
-                          // title: const Text(
-                          //   '_SliverAppBar',
-                          //   style: TextStyle(color: Colors.red),
-                          // ),
-                          // expandedTitleScale: 1,
-                          // titlePadding: EdgeInsets.zero,
                         ),
-                  title: _isSliverAppBarExpanded
-                      ? const Text(
-                          'Main Balance',
-                          style: TextStyle(color: Colors.white),
-                        )
-                      : null,
-                  // stretch: false,
-                  floating: false,
-                  pinned: true,
-                  expandedHeight: kExpandedHeight,
-                  leading: const Icon(Icons.arrow_back_ios),
-                  // backgroundColor: Colors.white,
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "All Transactions",
+                            style: TextStyle(
+                                color: Colors.black.withOpacity(.7),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600),
+                          ),
+                          Icon(
+                            Icons.archive_outlined,
+                            size: 30,
+                            color: Colors.black.withOpacity(.7),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
                 ),
               ),
-
-              // const SliverPadding(padding: EdgeInsets.only(top: 20)),
-              SliverToBoxAdapter(
-                child: Container(color: Colors.white),
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  var user = listData[index];
-                  return Container(
-                    color: Colors.white,
-                    child: Padding(
-                      padding: index == listData.length - 1
-                          ? const EdgeInsets.only(bottom: 35)
-                          : EdgeInsets.zero,
-                      child: Card(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 20),
+            ),
+            flexibleSpace: _isSliverAppBarExpanded
+                ? null
+                : FlexibleSpaceBar(
+                    centerTitle: true,
+                    // collapseMode: CollapseMode.pin,
+                    // collapseMode: CollapseMode.pin,
+                    background: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            top: 150,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(user.nama),
-                              Text(
-                                '${user.nomor}',
-                                style: Theme.of(context).textTheme.bodySmall,
+                              const Padding(
+                                padding: EdgeInsets.only(
+                                  left: 20,
+                                ),
+                                child: Text(
+                                  "Main Balance",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 20,
+                                ),
+                                child: Row(
+                                  children: const [
+                                    Padding(
+                                      padding: EdgeInsets.only(right: 8),
+                                      child: Text(
+                                        "551 805 091 | Main",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w400),
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.copy,
+                                      color: Colors.white,
+                                      size: 18,
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 15, bottom: 5, left: 20),
+                                child: Row(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 10),
+                                      child: Text(
+                                        showValue ? "1,000,000" : "*** *** ***",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: showValue ? 30 : 30,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.only(right: 10),
+                                      child: Text(
+                                        "ZPOIN",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 23,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          showValue = !showValue;
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: const BoxDecoration(
+                                            color: Colors.transparent,
+                                            shape: BoxShape.circle),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                              color: Colors.blueGrey
+                                                  .withOpacity(.2),
+                                              borderRadius:
+                                                  BorderRadius.circular(60)),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 5, horizontal: 5),
+                                          child: const Icon(
+                                            Icons.remove_red_eye_outlined,
+                                            color: Colors.white,
+                                            size: 13,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.only(
+                                  left: 20,
+                                ),
+                                child: Text(
+                                  "Available Balance",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500),
+                                ),
                               ),
                             ],
                           ),
                         ),
-                      ),
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Stack(
+                            children: [
+                              Container(
+                                height: 195,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              Container(
+                                height: 120,
+                                width: double.maxFinite,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(20),
+                                      topRight: Radius.circular(20)),
+                                ),
+                                child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: const [
+                                          Padding(
+                                            padding:
+                                                EdgeInsets.only(bottom: 10),
+                                            child: Icon(
+                                              Icons.qr_code,
+                                              color: primaryColor,
+                                              size: 40,
+                                            ),
+                                          ),
+                                          Text(
+                                            "My QR",
+                                            style: TextStyle(
+                                                color: Colors.black54,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600),
+                                          )
+                                        ],
+                                      ),
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: const [
+                                          Padding(
+                                            padding:
+                                                EdgeInsets.only(bottom: 10),
+                                            child: Icon(
+                                              Icons.compare_arrows,
+                                              color: primaryColor,
+                                              size: 40,
+                                            ),
+                                          ),
+                                          Text(
+                                            "Transfer",
+                                            style: TextStyle(
+                                                color: Colors.black54,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600),
+                                          )
+                                        ],
+                                      ),
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: const [
+                                          Padding(
+                                            padding:
+                                                EdgeInsets.only(bottom: 10),
+                                            child: Icon(
+                                              Icons.savings,
+                                              color: primaryColor,
+                                              size: 40,
+                                            ),
+                                          ),
+                                          Text(
+                                            "Staking",
+                                            style: TextStyle(
+                                                color: Colors.black54,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600),
+                                          )
+                                        ],
+                                      ),
+                                    ]),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                }, childCount: listData.length),
-              ),
-            ],
+
+                    // title: const Text(
+                    //   '_SliverAppBar',
+                    //   style: TextStyle(color: Colors.red),
+                    // ),
+                    // expandedTitleScale: 1,
+                    // titlePadding: EdgeInsets.zero,
+                  ),
+            title: _isSliverAppBarExpanded
+                ? const Text(
+                    'Main Balance',
+                    style: TextStyle(color: Colors.white),
+                  )
+                : null,
+            // stretch: false,
+            floating: false,
+            pinned: true,
+            expandedHeight: kExpandedHeight,
+            leading: const Icon(Icons.arrow_back_ios),
+            // backgroundColor: Colors.white,
           ),
-        ),
+
+          // const SliverPadding(padding: EdgeInsets.only(top: 20)),
+          SliverList(
+            delegate: SliverChildBuilderDelegate((context, index) {
+              var user = listData[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 3),
+                child: Card(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: Text(
+                              "${((listData.length - index)).toString().padLeft(2, '0')} Mar 2023"),
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(12)),
+                                  child: Icon(
+                                    (index + 1) % 2 == 0
+                                        ? Icons.arrow_outward
+                                        : Icons.arrow_downward_sharp,
+                                    color: (index + 1) % 2 == 0
+                                        ? Colors.red
+                                        : Colors.green,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 20),
+                                  // child: Text("-${(index + 1) * 100}"),
+                                  child: Text(
+                                    user.nama,
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              (index + 1) % 2 == 0
+                                  ? "-${(index + 1) * 100} ZPOIN"
+                                  : "${(index + 1) * 100} ZPOIN",
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: (index + 1) % 2 == 0
+                                      ? Colors.red
+                                      : Colors.green),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }, childCount: listData.length),
+          ),
+        ],
       ),
     );
   }
