@@ -515,6 +515,7 @@ class _MyHomePageState extends State<MyHomePage> {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 3),
                 child: Card(
+                  shadowColor: Colors.transparent,
                   child: Padding(
                     padding:
                         const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
